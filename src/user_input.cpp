@@ -1,0 +1,69 @@
+#include "user_input.h"
+
+namespace deviant {
+namespace {
+enum class Option { HELP, VERSION, INCORRECT };
+
+void printErrorMesesage(const std::string err) {
+  std::cout << "Deviant Error: " << err << "\n";
+}
+
+void printMessage(Option option) {
+  switch (option) {
+    case Option::HELP:
+      printf("Usage:\n");
+      printf("deviant filename -h -v -q path1;path2\n");
+      printf("\t-h this help text.\n");
+      printf("\t-v be more verbose.\n");
+      printf("\t-q be quiet.\n");
+      break;
+    case Option::VERSION:
+      printf("deviant version 1.0.0\n");
+      break;
+    case Option::INCORRECT:
+      printErrorMesesage("Input parameter is not correct");
+      printErrorMesesage("Run 'deviant --help' for all supported options.");
+      break;
+    default:
+      break;
+  }
+}
+
+bool isValidDvtFile(const std::string& filename) {
+  size_t location = filename.find_first_of('.');
+  return (filename.substr(location + 1, filename.size()) == "dvt") ? true
+                                                                   : false;
+}
+
+}  // namespace
+
+bool UserInput::handleUserInput(int argc, char* argv[]) {
+  // debug test
+  filename_ = "C://Users//billb//code//Github//deviant//test.dvt";
+  return true;
+  // ----------
+
+  if (argc <= 1) {
+    printMessage(Option::HELP);
+    return false;
+  }
+  std::string arg(argv[1]);
+  if (argc == 2 && arg[0] == '-') {
+    // TODO: not correct here
+    const std::string& opt = (arg[1] == '-') ? (arg.substr(2, arg.size()))
+                                             : (arg.substr(1, arg.size()));
+
+    if (opt == "version") {
+      printMessage(Option::VERSION);
+    } else if (opt == "h" || opt == "help") {
+      printMessage(Option::HELP);
+    } else {
+      printMessage(Option::INCORRECT);
+    }
+  } else if (isValidDvtFile(arg)) {  // filename
+    filename_ = arg;
+    return true;
+  }
+  return false;
+}
+}  // namespace deviant
