@@ -1,9 +1,7 @@
-; ModuleID = 'DeviantLLVM'
-source_filename = "DeviantLLVM"
-
-declare i32 @printf(ptr, ...)
+; ModuleID = 'deviant'
+source_filename = "deviant"
 
 define i32 @main() {
 entry:
-  ret i32 0
+  ret i32 42
 }

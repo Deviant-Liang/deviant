@@ -29,13 +29,15 @@ class DeviantLLVM {
 
     // print generated code
     module_->print(llvm::outs(), nullptr);
-    printf("\n");
+    // #if !defined(LLVM_NO_DUMP)
+    //     // module_->dump();
+    // #endif
 
     // save module IR to file
     saveModuleToFile("./out.ll");
   }
 
-  llvm::LLVMContext& getGlobalContext() { return llvm_context_; }
+  llvm::LLVMContext& getGlobalContext() { return *context_.get(); }
 
   llvm::Type* getGenericIntegerType() {
     return llvm::Type::getInt32Ty(getGlobalContext());
@@ -43,38 +45,43 @@ class DeviantLLVM {
 
   llvm::Module* getModule() { return module_.get(); }
 
+  llvm::IRBuilder<>* getBuilder() { return builder_.get(); }
+
  private:
   void initModule();
 
   void saveModuleToFile(const std::string& filename);
 
-  void compile(const AstNode& ast) {
+  void compile(Program& ast) {
     // create main function
-    fn_ = createFunction(
-        "main", llvm::FunctionType::get(/*return type*/ builder_->getInt32Ty(),
-                                        /*vararg*/ false));
+    // fn_ = createFunction(
+    //     "main", llvm::FunctionType::get(/*return type*/
+    //     builder_->getInt32Ty(),
+    //                                     /*vararg*/ false), gen(ast));
 
     // compile main body
-    // gen(ast);
+    gen(ast);
 
     // cast to i32 to return from main
-    builder_->CreateRet(builder_->getInt32(0));
+    // builder_->CreateRet(builder_->getInt32(0));
   }
 
   // main compiler loop
-  llvm::Value* gen(const AstNode& ast) {
+  llvm::Value* gen(Program& ast) {
     // return builder_->getInt32(42);
+    return ast.generateCode(*this);
 
+    // ------------------------------------------------------------
     // strings
-    auto str = builder_->CreateGlobalStringPtr("Hello, world!\n");
+    // auto str = builder_->CreateGlobalStringPtr("Hello, world!\n");
 
     // call to printf
-    auto print_fn = module_->getFunction("printf");
+    // auto print_fn = module_->getFunction("printf");
 
     // args
-    std::vector<llvm::Value*> args{str};
+    // std::vector<llvm::Value*> args{str};
 
-    return builder_->CreateCall(print_fn, args);
+    // return builder_->CreateCall(print_fn, args);
   }
 
   void setupExternFunctions() {
@@ -89,13 +96,14 @@ class DeviantLLVM {
   }
 
   llvm::Function* createFunction(const std::string& fn_name,
-                                 llvm::FunctionType* fn_type) {
+                                 llvm::FunctionType* fn_type,
+                                 llvm::Value* ret_val) {
     // function prototype might already be defined
     auto fn = module_->getFunction(fn_name);
 
     // if not, allocate the function
     if (!fn) {
-      fn = createFunctionPrototype(fn_name, fn_type);
+      fn = createFunctionPrototype(fn_name, fn_type, ret_val);
     }
 
     createFunctionBlock(fn);
@@ -103,9 +111,13 @@ class DeviantLLVM {
   }
 
   llvm::Function* createFunctionPrototype(const std::string& fn_name,
-                                          llvm::FunctionType* fn_type) {
+                                          llvm::FunctionType* fn_type,
+                                          llvm::Value* ret_val) {
     auto fn = llvm::Function::Create(fn_type, llvm::Function::ExternalLinkage,
                                      fn_name, *module_);
+
+    // builder_->CreateRet(ret_val);
+
     verifyFunction(*fn);
 
     return fn;
@@ -126,8 +138,6 @@ class DeviantLLVM {
 
   // currently complier function
   llvm::Function* fn_;
-
-  llvm::LLVMContext llvm_context_;
 
   std::unique_ptr<llvm::LLVMContext> context_;
 

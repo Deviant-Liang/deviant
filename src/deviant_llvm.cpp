@@ -3,12 +3,12 @@
 namespace deviant {
 DeviantLLVM::DeviantLLVM() {
   initModule();
-  setupExternFunctions();
+  // setupExternFunctions();
 }
 
 void DeviantLLVM::initModule() {
   context_ = std::make_unique<llvm::LLVMContext>();
-  module_ = std::make_unique<llvm::Module>("DeviantLLVM", *context_);
+  module_ = std::make_unique<llvm::Module>("deviant", *context_);
 
   builder_ = std::make_unique<llvm::IRBuilder<>>(*context_);
 }

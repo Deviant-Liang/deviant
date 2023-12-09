@@ -3,10 +3,12 @@
 
 namespace deviant {
 enum class TokenType {
+  ILLEGAL,
   RETURN,
   INT_LIT,
-  SEMI,
-  EXIT,
+  INT,
+  FN,
+  FN_TYPE,
   LET,
   IF,
   IDENTIFIER,

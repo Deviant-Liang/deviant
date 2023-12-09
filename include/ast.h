@@ -38,7 +38,7 @@ class AstNode {
 class Expression : public AstNode {
  public:
   ~Expression() override = default;
-  // llvm::Value* generateCode(DeviantLLVM& context) override;
+  llvm::Value* generateCode(DeviantLLVM& context) override = 0;
   Type type() override { return Type::EXPRESSTION; }
   std::string toString() override { return STR_EXPRESSTION; }
 };
@@ -46,7 +46,7 @@ class Expression : public AstNode {
 class Statement : public Expression {
  public:
   ~Statement() override = default;
-  // llvm::Value* generateCode(DeviantLLVM& context) override;
+  llvm::Value* generateCode(DeviantLLVM& context) override = 0;
   Type type() override { return Type::EXPRESSTION; }
   std::string toString() override { return STR_STATEMENT; }
 };
@@ -54,7 +54,7 @@ class Statement : public Expression {
 class Program : public AstNode {
  public:
   ~Program() override = default;
-  // llvm::Value* generateCode(DeviantLLVM& context) override;
+  llvm::Value* generateCode(DeviantLLVM& context) override;
   Type type() override { return Type::PROGRAM; }
   std::string toString() override { return "Program"; }
 
@@ -83,26 +83,65 @@ class Identifier : public Expression {
   ~Identifier() override = default;
   // llvm::Value* generateCode(DeviantLLVM& context) override;
   Type type() override { return Type::IDENTIFIER; }
+  std::string toString() override { return "identifier"; }
+
+  const std::string& getName() { return name_; }
 
  private:
+  std::string name_;
+};
+
+class LetStatement : public Statement {
+ public:
+  ~LetStatement() override = default;
+  Type type() override { return Type::STATEMENT; }
+  std::string toString() override { return "let"; }
+
+ private:
+  std::unique_ptr<Identifier> identifier_;
+  std::unique_ptr<Expression> expr_;
 };
 
 class Block : public Expression {
  public:
-  // StatementList statements;
-
   Block() = default;
-  ~Block() override {
-    // for (auto i : statements) {
-    //   delete i;
-    // }
-    // statements.clear();
+  ~Block() override = default;
+
+  Type type() override { return Type::EXPRESSTION; }
+  llvm::Value* generateCode(DeviantLLVM& context) override;
+  std::string toString() override { return "block"; }
+  void insertStatement(std::unique_ptr<Statement>&& stmt) {
+    statements_.emplace_back(std::move(stmt));
   }
 
-  // llvm::Value* generateCode(DeviantLLVM& context) override;
-  Type type() override { return Type::EXPRESSTION; }
-  std::string toString() override { return "block "; }
-  // void Accept(Visitor& v) override { v.VisitBlock(this); }
+ private:
+  std::vector<std::unique_ptr<Statement>> statements_;
+};
+
+class ReturnStatement : public Statement {
+ public:
+  explicit ReturnStatement(std::unique_ptr<Expression>&& expr)
+      : ret_expr_(std::move(expr)) {}
+  ~ReturnStatement() override = default;
+  llvm::Value* generateCode(DeviantLLVM& context) override;
+  std::string toString() override { return "return"; }
+
+ private:
+  std::unique_ptr<Expression> ret_expr_;
+};
+
+class FunctionStatement : public Statement {
+ public:
+  FunctionStatement(const std::string& fn_name) : fn_name_(fn_name) {}
+  ~FunctionStatement() override = default;
+  Type type() override { return Type::STATEMENT; }
+  llvm::Value* generateCode(DeviantLLVM& context) override;
+  std::string toString() override { return "fn"; }
+  Block& getBody() { return body_; }
+
+ private:
+  std::string fn_name_;
+  Block body_;
 };
 
 }  // namespace deviant

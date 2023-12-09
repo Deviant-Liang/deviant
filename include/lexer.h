@@ -14,21 +14,27 @@ class Lexer {
   explicit Lexer(const std::string& src);
 
   inline void tokenize() {
-    std::string buf;
+    std::string buf("");
     while (peek().has_value()) {
       if (std::isalpha(peek().value())) {
-        buf.push_back(consume());
+        buf += consume();
         while (peek().has_value() && std::isalnum(peek().value())) {
           buf.push_back(consume());
         }
-        if (buf == "exit") {
-          tokens_.push_back({.type = TokenType::EXIT});
+        if (buf == "ret") {
+          tokens_.push_back({.type = TokenType::RETURN});
           buf.clear();
         } else if (buf == "let") {
           tokens_.push_back({.type = TokenType::LET});
           buf.clear();
         } else if (buf == "if") {
           tokens_.push_back({.type = TokenType::IF});
+          buf.clear();
+        } else if (buf == "fn") {
+          tokens_.push_back({.type = TokenType::FN});
+          buf.clear();
+        } else if (buf == "int") {
+          tokens_.push_back({.type = TokenType::INT});
           buf.clear();
         } else {
           tokens_.push_back({.type = TokenType::IDENTIFIER, .value = buf});
@@ -61,7 +67,12 @@ class Lexer {
         tokens_.push_back({.type = TokenType::STAR});
       } else if (peek().value() == '-') {
         consume();
-        tokens_.push_back({.type = TokenType::MINUS});
+        if (peek().value() == '>') {
+          consume();
+          tokens_.push_back({.type = TokenType::FN_TYPE});
+        } else {
+          tokens_.push_back({.type = TokenType::MINUS});
+        }
       } else if (peek().value() == '/') {
         consume();
         tokens_.push_back({.type = TokenType::FSLASH});
@@ -86,7 +97,7 @@ class Lexer {
   const std::vector<Token>& getTokens() const { return tokens_; }
 
  private:
-  [[nodiscard]] inline std::optional<char> peek(int offset = 0) const {
+  [[nodiscard]] inline std::optional<char> peek(const int offset = 0) const {
     if (index_ + offset >= str_.length()) {
       return {};
     } else {
