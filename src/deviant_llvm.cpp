@@ -3,7 +3,7 @@
 namespace deviant {
 DeviantLLVM::DeviantLLVM() {
   initModule();
-  // setupExternFunctions();
+  setupExternFunctions();
 }
 
 void DeviantLLVM::initModule() {

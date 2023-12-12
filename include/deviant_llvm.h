@@ -5,10 +5,18 @@
 #include <string>
 #include <vector>
 
+#if defined(_MSC_VER)
+#pragma warning(push, 0)
+#endif
+
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Verifier.h"
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #include "ast.h"
 #include "parser.h"
@@ -47,6 +55,26 @@ class DeviantLLVM {
 
   llvm::IRBuilder<>* getBuilder() { return builder_.get(); }
 
+  llvm::AllocaInst* findVariable(const std::string& varName) {
+    if (currentScopeType == ScopeType::FunctionDeclaration) {
+      // Only look in current scope, since outer scope isn't valid while in
+      // function declaration.
+      auto& names = locals();
+      if (names.find(varName) != names.end()) {
+        return names[varName];
+      }
+      return nullptr;
+    }
+
+    // Travers from inner to outer scope (block) to find the variable.
+    for (auto& cb : codeBlocks) {
+      auto& names = cb->getValueNames();
+      if (names.find(varName) != names.end()) {
+        return names[varName];
+      }
+    }
+  }
+
  private:
   void initModule();
 
@@ -73,15 +101,15 @@ class DeviantLLVM {
 
     // ------------------------------------------------------------
     // strings
-    // auto str = builder_->CreateGlobalStringPtr("Hello, world!\n");
+    auto str = builder_->CreateGlobalStringPtr("Hello, world!\n");
 
     // call to printf
-    // auto print_fn = module_->getFunction("printf");
+    auto print_fn = module_->getFunction("print");
 
     // args
-    // std::vector<llvm::Value*> args{str};
+    std::vector<llvm::Value*> args{str};
 
-    // return builder_->CreateCall(print_fn, args);
+    return builder_->CreateCall(print_fn, args);
   }
 
   void setupExternFunctions() {
@@ -90,20 +118,19 @@ class DeviantLLVM {
 
     // int print(const char* format, ...)
     module_->getOrInsertFunction(
-        "printf",
+        "print",
         llvm::FunctionType::get(/*return type*/ builder_->getInt32Ty(),
                                 /*format arg*/ byte_ptr_Ty, /*vararg*/ true));
   }
 
   llvm::Function* createFunction(const std::string& fn_name,
-                                 llvm::FunctionType* fn_type,
-                                 llvm::Value* ret_val) {
+                                 llvm::FunctionType* fn_type) {
     // function prototype might already be defined
     auto fn = module_->getFunction(fn_name);
 
     // if not, allocate the function
     if (!fn) {
-      fn = createFunctionPrototype(fn_name, fn_type, ret_val);
+      fn = createFunctionPrototype(fn_name, fn_type);
     }
 
     createFunctionBlock(fn);
@@ -111,15 +138,11 @@ class DeviantLLVM {
   }
 
   llvm::Function* createFunctionPrototype(const std::string& fn_name,
-                                          llvm::FunctionType* fn_type,
-                                          llvm::Value* ret_val) {
+                                          llvm::FunctionType* fn_type) {
     auto fn = llvm::Function::Create(fn_type, llvm::Function::ExternalLinkage,
                                      fn_name, *module_);
 
-    // builder_->CreateRet(ret_val);
-
     verifyFunction(*fn);
-
     return fn;
   }
 

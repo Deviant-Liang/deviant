@@ -5,7 +5,15 @@
 #include <string>
 #include <vector>
 
+#if defined(_MSC_VER)
+#pragma warning(push, 0)
+#endif
+
 #include "llvm/IR/Value.h"
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #define STR_EXPRESSTION "Expression"
 #define STR_STATEMENT "Statement"
@@ -80,8 +88,9 @@ class Integer : public Expression {
 
 class Identifier : public Expression {
  public:
+  explicit Identifier(const std::string& name) : name_(name) {}
   ~Identifier() override = default;
-  // llvm::Value* generateCode(DeviantLLVM& context) override;
+  llvm::Value* generateCode(DeviantLLVM& context) override;
   Type type() override { return Type::IDENTIFIER; }
   std::string toString() override { return "identifier"; }
 
@@ -89,11 +98,35 @@ class Identifier : public Expression {
 
  private:
   std::string name_;
+  std::unique_ptr<Expression> expr_;
 };
 
-class LetStatement : public Statement {
+class VariableDeclaration : public Statement {
  public:
-  ~LetStatement() override = default;
+  VariableDeclaration(std::unique_ptr<Identifier>&& identifier,
+                      std::unique_ptr<Expression>&& expr)
+      : identifier_(std::move(identifier)), expr_(std::move(expr)) {}
+  ~VariableDeclaration() override = default;
+  llvm::Value* generateCode(DeviantLLVM& context) override;
+  Type type() override { return Type::STATEMENT; }
+  std::string toString() override { return "let"; }
+  void setIdentifier(std::unique_ptr<Identifier>&& identifier) {
+    identifier_ = std::move(identifier);
+  }
+  void setExpression(std::unique_ptr<Expression>&& expr) {
+    expr_ = std::move(expr_);
+  }
+
+ private:
+  std::unique_ptr<Identifier> identifier_;
+  std::unique_ptr<Expression> expr_;
+};
+
+class Assignment : public Statement {
+ public:
+  explicit Assignment() {}
+  ~Assignment() override = default;
+  llvm::Value* generateCode(DeviantLLVM& context) override;
   Type type() override { return Type::STATEMENT; }
   std::string toString() override { return "let"; }
 
@@ -104,14 +137,13 @@ class LetStatement : public Statement {
 
 class Block : public Expression {
  public:
-  Block() = default;
   ~Block() override = default;
 
   Type type() override { return Type::EXPRESSTION; }
   llvm::Value* generateCode(DeviantLLVM& context) override;
   std::string toString() override { return "block"; }
   void insertStatement(std::unique_ptr<Statement>&& stmt) {
-    statements_.emplace_back(std::move(stmt));
+    statements_.push_back(std::move(stmt));
   }
 
  private:
@@ -132,16 +164,28 @@ class ReturnStatement : public Statement {
 
 class FunctionStatement : public Statement {
  public:
-  FunctionStatement(const std::string& fn_name) : fn_name_(fn_name) {}
+  explicit FunctionStatement(const std::string& fn_name) : fn_name_(fn_name) {}
   ~FunctionStatement() override = default;
   Type type() override { return Type::STATEMENT; }
   llvm::Value* generateCode(DeviantLLVM& context) override;
   std::string toString() override { return "fn"; }
-  Block& getBody() { return body_; }
+  void setBlock(std::unique_ptr<Block>&& body) { body_ = std::move(body); }
 
  private:
   std::string fn_name_;
-  Block body_;
+  std::unique_ptr<Block> body_;
+};
+
+class FunctionCall : public Statement {
+ public:
+  explicit FunctionCall(const std::string& fn_name) : fn_name_(fn_name) {}
+  ~FunctionCall() override = default;
+  Type type() override { return Type::STATEMENT; }
+  llvm::Value* generateCode(DeviantLLVM& context) override;
+  std::string toString() override { return "fn call"; }
+
+ private:
+  std::string fn_name_;
 };
 
 }  // namespace deviant

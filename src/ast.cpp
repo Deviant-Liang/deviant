@@ -1,9 +1,17 @@
 #include "ast.h"
 
+#if defined(_MSC_VER)
+#pragma warning(push, 0)
+#endif
+
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Verifier.h"
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #include "deviant_llvm.h"
 
@@ -24,6 +32,24 @@ llvm::Value* AstNode::generateCode(DeviantLLVM& context) {
 
 llvm::Value* Integer::generateCode(DeviantLLVM& context) {
   return llvm::ConstantInt::get(context.getGenericIntegerType(), value_, true);
+}
+
+llvm::Value* Identifier::generateCode(DeviantLLVM& context) {
+  // a usual stack variable
+  llvm::AllocaInst* alloc = context.findVariable(name_);
+  if (alloc != nullptr) {
+    return new llvm::LoadInst(alloc->getAllocatedType(), alloc, name_, false,
+                              context.currentBlock());
+  }
+}
+
+llvm::Value* VariableDeclaration::generateCode(DeviantLLVM& context) {
+  // return context.getBuilder()->CreateAlloca();
+}
+
+llvm::Value* Assignment::generateCode(DeviantLLVM& context) {
+  return nullptr;
+  // return context.getBuilder()->CreateAlloca();
 }
 
 llvm::Value* Block::generateCode(DeviantLLVM& context) {
@@ -58,7 +84,6 @@ llvm::Value* FunctionStatement::generateCode(DeviantLLVM& context) {
   if (!fn) {
     fn = llvm::Function::Create(fn_type, llvm::Function::ExternalLinkage,
                                 fn_name_, *context.getModule());
-    // builder_->CreateRet(ret_val);
     verifyFunction(*fn);
   }
 
@@ -67,9 +92,16 @@ llvm::Value* FunctionStatement::generateCode(DeviantLLVM& context) {
       llvm::BasicBlock::Create(context.getGlobalContext(), "entry", fn);
   context.getBuilder()->SetInsertPoint(entry);
 
-  llvm::IRBuilder builder(entry);
-  builder.CreateRet(builder.getInt32(42));
+  body_->generateCode(context);
 
   return fn;
+}
+
+llvm::Value* FunctionCall::generateCode(DeviantLLVM& context) {
+  // args
+  std::vector<llvm::Value*> args;
+
+  return context.getBuilder()->CreateCall(
+      context.getModule()->getFunction(fn_name_), args);
 }
 }  // namespace deviant

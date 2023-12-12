@@ -1,3 +1,9 @@
-fn main() -> int {
+fn get42() -> int {
   ret 42;
+}
+
+fn main() -> int {
+  var a;
+  get42();
+  ret 0;
 }

@@ -18,18 +18,18 @@ class Parser {
   std::unique_ptr<Program> parse();
 
  private:
-  // TODO:
-  // parsing functions
+  // TODO: lots of things...
   std::unique_ptr<Expression> parseExpression();
   std::unique_ptr<Statement> parseTopLevelStatement();
   std::unique_ptr<Statement> parseStatement();
-  std::unique_ptr<LetStatement> parseLetStatement();
+  std::unique_ptr<VariableDeclaration> parseVariableDeclaration();
+  std::unique_ptr<Assignment> parseAssignment();
   std::unique_ptr<FunctionStatement> parseFunctionStatement();
+  std::unique_ptr<FunctionCall> parseFunctionCall();
   std::unique_ptr<ReturnStatement> parseReturnStatement();
   std::unique_ptr<Block> parseBlock();
-  void parseStringLiteral();
-  void parseFunctiot();
-  void parseScope();
+  // void parseStringLiteral();
+  // void parseScope();
 
   [[nodicard]] std::optional<Token> peek(int offset = 0) const;
 

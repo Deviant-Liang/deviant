@@ -24,8 +24,8 @@ class Lexer {
         if (buf == "ret") {
           tokens_.push_back({.type = TokenType::RETURN});
           buf.clear();
-        } else if (buf == "let") {
-          tokens_.push_back({.type = TokenType::LET});
+        } else if (buf == "var") {
+          tokens_.push_back({.type = TokenType::VAR});
           buf.clear();
         } else if (buf == "if") {
           tokens_.push_back({.type = TokenType::IF});
@@ -58,7 +58,7 @@ class Lexer {
         tokens_.push_back({.type = TokenType::SEMICOLON});
       } else if (peek().value() == '=') {
         consume();
-        tokens_.push_back({.type = TokenType::EQUAL});
+        tokens_.push_back({.type = TokenType::ASSIGNMENT});
       } else if (peek().value() == '+') {
         consume();
         tokens_.push_back({.type = TokenType::PLUS});
