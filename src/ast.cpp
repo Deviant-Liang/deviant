@@ -41,15 +41,28 @@ llvm::Value* Identifier::generateCode(DeviantLLVM& context) {
     return new llvm::LoadInst(alloc->getAllocatedType(), alloc, name_, false,
                               context.currentBlock());
   }
+  return nullptr;
 }
 
 llvm::Value* VariableDeclaration::generateCode(DeviantLLVM& context) {
-  // return context.getBuilder()->CreateAlloca();
+  llvm::Value* val = nullptr;
+
+  // if (context.findVariable(identifier_->getName())) {
+  //   // already declard!
+  //   // context.addError();
+  //   return nullptr;
+  // }
+
+  // TODO: understand
+  // context.locals()[identifier_->getName()] = nullptr;
+
+  return val;
 }
 
 llvm::Value* Assignment::generateCode(DeviantLLVM& context) {
-  return nullptr;
+  // TODO:
   // return context.getBuilder()->CreateAlloca();
+  return nullptr;
 }
 
 llvm::Value* Block::generateCode(DeviantLLVM& context) {

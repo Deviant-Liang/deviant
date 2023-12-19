@@ -23,6 +23,21 @@
 
 namespace deviant {
 
+class CodeGenBlock {
+ public:
+  CodeGenBlock(llvm::BasicBlock* bb) { bblock = bb; }
+  ~CodeGenBlock() {}
+  void setCodeBlock(llvm::BasicBlock* bb) { bblock = bb; }
+  llvm::BasicBlock* currentBlock() { return bblock; }
+  std::map<std::string, llvm::AllocaInst*>& getValueNames() { return locals; }
+  std::map<std::string, std::string>& getTypeMap() { return types; }
+
+ private:
+  llvm::BasicBlock* bblock{nullptr};
+  std::map<std::string, llvm::AllocaInst*> locals;
+  std::map<std::string, std::string> types;
+};
+
 class DeviantLLVM {
  public:
   DeviantLLVM();
@@ -55,24 +70,43 @@ class DeviantLLVM {
 
   llvm::IRBuilder<>* getBuilder() { return builder_.get(); }
 
-  llvm::AllocaInst* findVariable(const std::string& varName) {
-    if (currentScopeType == ScopeType::FunctionDeclaration) {
-      // Only look in current scope, since outer scope isn't valid while in
-      // function declaration.
-      auto& names = locals();
-      if (names.find(varName) != names.end()) {
-        return names[varName];
-      }
-      return nullptr;
+  void newScope(llvm::BasicBlock* bb) {
+    if (bb == nullptr) {
+      bb = llvm::BasicBlock::Create(getGlobalContext(), "scope");
     }
+    code_blocks_.push_front(new CodeGenBlock(bb));
+  }
+
+  void endScope() {
+    CodeGenBlock* top = code_blocks_.front();
+    code_blocks_.pop_front();
+    delete top;
+  }
+
+  llvm::AllocaInst* findVariable(const std::string& var_name) {
+    // Only look in current scope, since outer scope isn't valid while in
+    // function declaration.
+    auto& names = locals();
+    if (names.find(var_name) != names.end()) {
+      return names[var_name];
+    }
+    return nullptr;
 
     // Travers from inner to outer scope (block) to find the variable.
-    for (auto& cb : codeBlocks) {
+    for (auto& cb : code_blocks_) {
       auto& names = cb->getValueNames();
-      if (names.find(varName) != names.end()) {
-        return names[varName];
+      if (names.find(var_name) != names.end()) {
+        return names[var_name];
       }
     }
+  }
+
+  llvm::BasicBlock* currentBlock() {
+    return code_blocks_.front()->currentBlock();
+  }
+
+  std::map<std::string, llvm::AllocaInst*>& locals() {
+    return code_blocks_.front()->getValueNames();
   }
 
  private:
@@ -167,6 +201,8 @@ class DeviantLLVM {
   std::unique_ptr<llvm::Module> module_;
 
   std::unique_ptr<llvm::IRBuilder<>> builder_;
+
+  std::list<CodeGenBlock*> code_blocks_;
 };
 
 }  // namespace deviant

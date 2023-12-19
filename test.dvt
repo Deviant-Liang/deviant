@@ -3,7 +3,6 @@ fn get42() -> int {
 }
 
 fn main() -> int {
-  var a;
   get42();
   ret 0;
 }

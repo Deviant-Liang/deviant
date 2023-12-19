@@ -72,7 +72,7 @@ std::unique_ptr<VariableDeclaration> Parser::parseVariableDeclaration() {
     auto identifier =
         std::make_unique<Identifier>(peek().value().value.value());
 
-    std::unique_ptr<Expression> expr;
+    std::unique_ptr<Expression> expr(nullptr);
     consume();
     auto token_type = consume().type;
     switch (token_type) {
@@ -84,7 +84,8 @@ std::unique_ptr<VariableDeclaration> Parser::parseVariableDeclaration() {
       default:
         return nullptr;
     }
-    auto var_decl = std::make_unique<VariableDeclaration>(identifier, expr);
+    auto var_decl = std::make_unique<VariableDeclaration>(std::move(identifier),
+                                                          std::move(expr));
     consume();
     return var_decl;
   } else {
