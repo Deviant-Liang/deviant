@@ -74,7 +74,7 @@ std::unique_ptr<VariableDeclaration> Parser::parseVariableDeclaration() {
 
     std::unique_ptr<Expression> expr(nullptr);
     consume();
-    auto token_type = consume().type;
+    auto token_type = peek().value().type;
     switch (token_type) {
       case TokenType::SEMICOLON:
         break;
@@ -86,7 +86,7 @@ std::unique_ptr<VariableDeclaration> Parser::parseVariableDeclaration() {
     }
     auto var_decl = std::make_unique<VariableDeclaration>(std::move(identifier),
                                                           std::move(expr));
-    consume();
+    // consume();
     return var_decl;
   } else {
     return nullptr;

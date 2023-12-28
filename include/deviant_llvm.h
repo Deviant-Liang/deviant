@@ -90,7 +90,7 @@ class DeviantLLVM {
     if (names.find(var_name) != names.end()) {
       return names[var_name];
     }
-    return nullptr;
+    // return nullptr;
 
     // Travers from inner to outer scope (block) to find the variable.
     for (auto& cb : code_blocks_) {
@@ -99,6 +99,8 @@ class DeviantLLVM {
         return names[var_name];
       }
     }
+
+    return nullptr;
   }
 
   llvm::BasicBlock* currentBlock() {

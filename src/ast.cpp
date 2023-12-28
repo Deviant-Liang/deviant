@@ -47,15 +47,17 @@ llvm::Value* Identifier::generateCode(DeviantLLVM& context) {
 llvm::Value* VariableDeclaration::generateCode(DeviantLLVM& context) {
   llvm::Value* val = nullptr;
 
-  // if (context.findVariable(identifier_->getName())) {
-  //   // already declard!
-  //   // context.addError();
-  //   return nullptr;
-  // }
+  if (context.findVariable(identifier_->getName())) {
+    // already declard!
+    // context.addError();
+    return nullptr;
+  }
 
   // TODO: understand
   // context.locals()[identifier_->getName()] = nullptr;
-
+  val = new llvm::AllocaInst(context.getGenericIntegerType(), 0,
+                             identifier_->getName().c_str(),
+                             context.currentBlock());
   return val;
 }
 
@@ -105,7 +107,11 @@ llvm::Value* FunctionStatement::generateCode(DeviantLLVM& context) {
       llvm::BasicBlock::Create(context.getGlobalContext(), "entry", fn);
   context.getBuilder()->SetInsertPoint(entry);
 
+  context.newScope(entry);
+
   body_->generateCode(context);
+
+  context.endScope();
 
   return fn;
 }
