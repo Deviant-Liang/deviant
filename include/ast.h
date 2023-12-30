@@ -128,10 +128,15 @@ class Assignment : public Statement {
   ~Assignment() override = default;
   llvm::Value* generateCode(DeviantLLVM& context) override;
   Type type() override { return Type::STATEMENT; }
-  std::string toString() override { return "let"; }
+  std::string toString() override { return "var"; }
+  void setVarname(const std::string& name) { var_name_ = name; }
+  void setExpression(std::unique_ptr<Expression>&& expr) {
+    expr_ = std::move(expr);
+  }
 
  private:
-  std::unique_ptr<Identifier> identifier_;
+  // std::unique_ptr<Identifier> identifier_;
+  std::string var_name_;
   std::unique_ptr<Expression> expr_;
 };
 

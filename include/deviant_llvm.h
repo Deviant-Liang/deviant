@@ -25,17 +25,17 @@ namespace deviant {
 
 class CodeGenBlock {
  public:
-  CodeGenBlock(llvm::BasicBlock* bb) { bblock = bb; }
+  CodeGenBlock(llvm::BasicBlock* bb) { bblock_ = bb; }
   ~CodeGenBlock() {}
-  void setCodeBlock(llvm::BasicBlock* bb) { bblock = bb; }
-  llvm::BasicBlock* currentBlock() { return bblock; }
-  std::map<std::string, llvm::AllocaInst*>& getValueNames() { return locals; }
-  std::map<std::string, std::string>& getTypeMap() { return types; }
+  void setCodeBlock(llvm::BasicBlock* bb) { bblock_ = bb; }
+  llvm::BasicBlock* currentBlock() { return bblock_; }
+  std::map<std::string, llvm::AllocaInst*>& getValueNames() { return locals_; }
+  std::map<std::string, std::string>& getTypeMap() { return types_; }
 
  private:
-  llvm::BasicBlock* bblock{nullptr};
-  std::map<std::string, llvm::AllocaInst*> locals;
-  std::map<std::string, std::string> types;
+  llvm::BasicBlock* bblock_{nullptr};
+  std::map<std::string, llvm::AllocaInst*> locals_;
+  std::map<std::string, std::string> types_;
 };
 
 class DeviantLLVM {
@@ -101,6 +101,10 @@ class DeviantLLVM {
     }
 
     return nullptr;
+  }
+
+  void conductVar(std::string var_name, llvm::AllocaInst* alloca) {
+    code_blocks_.front()->getValueNames()[var_name] = alloca;
   }
 
   llvm::BasicBlock* currentBlock() {

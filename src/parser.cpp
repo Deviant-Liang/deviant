@@ -60,6 +60,8 @@ std::unique_ptr<Statement> Parser::parseStatement() {
       } else {
         return nullptr;
       }
+    case TokenType::ASSIGNMENT:
+      return parseAssignment();
     case TokenType::RETURN:
       return parseReturnStatement();
     default:
@@ -78,8 +80,8 @@ std::unique_ptr<VariableDeclaration> Parser::parseVariableDeclaration() {
     switch (token_type) {
       case TokenType::SEMICOLON:
         break;
-      case TokenType::ASSIGNMENT:
-        expr = std::make_unique<Assignment>();
+      case TokenType::ASSIGNMENT:  // TODO:
+        --index_;
         break;
       default:
         return nullptr;
@@ -97,6 +99,16 @@ std::unique_ptr<Assignment> Parser::parseAssignment() {
   auto assign = std::make_unique<Assignment>();
 
   // TODO:
+  assign->setVarname(peek(-1).value().value.value());
+  consume();
+
+  // TODO: remove hardcode
+  // auto a = consume().value.value().c_str();
+  int val = atoi(consume().value.value().c_str());
+  auto expr = std::make_unique<Integer>(val);
+  assign->setExpression(std::move(expr));
+
+  // consume();
 
   return assign;
 }

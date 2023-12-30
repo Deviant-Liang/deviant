@@ -47,7 +47,9 @@ llvm::Value* Identifier::generateCode(DeviantLLVM& context) {
 llvm::Value* VariableDeclaration::generateCode(DeviantLLVM& context) {
   llvm::Value* val = nullptr;
 
-  if (context.findVariable(identifier_->getName())) {
+  const std::string& var_name(identifier_->getName());
+
+  if (context.findVariable(var_name)) {
     // already declard!
     // context.addError();
     return nullptr;
@@ -58,13 +60,23 @@ llvm::Value* VariableDeclaration::generateCode(DeviantLLVM& context) {
   val = new llvm::AllocaInst(context.getGenericIntegerType(), 0,
                              identifier_->getName().c_str(),
                              context.currentBlock());
+
+  // TODO: remove hardcode
+  auto alloca = static_cast<llvm::AllocaInst*>(val);
+  context.conductVar(var_name, alloca);
+
   return val;
 }
 
 llvm::Value* Assignment::generateCode(DeviantLLVM& context) {
   // TODO:
-  // return context.getBuilder()->CreateAlloca();
-  return nullptr;
+  llvm::AllocaInst* alloc = context.findVariable(var_name_);
+  if (alloc) {
+    llvm::Value* val = expr_->generateCode(context);
+    return new llvm::StoreInst(val, alloc, false, context.currentBlock());
+  } else {  // not declare yet
+    return nullptr;
+  }
 }
 
 llvm::Value* Block::generateCode(DeviantLLVM& context) {
