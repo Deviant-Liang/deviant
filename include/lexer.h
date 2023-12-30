@@ -74,8 +74,16 @@ class Lexer {
           tokens_.push_back({.type = TokenType::MINUS});
         }
       } else if (peek().value() == '/') {
-        consume();
-        tokens_.push_back({.type = TokenType::FSLASH});
+        if (peek(-1).value() == '/') {  // deal with comment
+          tokens_.pop_back();
+          char c = '/';
+          while (c != '\n') {
+            c = consume();
+          }
+        } else {
+          consume();
+          tokens_.push_back({.type = TokenType::FSLASH});
+        }
       } else if (peek().value() == '{') {
         consume();
         tokens_.push_back({.type = TokenType::OPEN_CURLY});

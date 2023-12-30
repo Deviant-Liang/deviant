@@ -18,10 +18,19 @@ std::unique_ptr<Expression> Parser::parseExpression() {
   if (peek().has_value() && peek().value().value.has_value()) {
     Token token(peek().value());
     const std::string& value(token.value.value());
-    if (peek().value().type == TokenType::INT_LIT) {
-      return std::make_unique<Integer>(stoi(value));
-    } else {
-      return nullptr;
+    switch (peek().value().type) {
+      case TokenType::INT_LIT:
+        return std::make_unique<Integer>(stoi(value));
+      case TokenType::IDENTIFIER:
+        if (peek(1).value().type == TokenType::OPEN_PAREN) {
+          // TODO: remove dangerous code
+          consume();
+          return parseFunctionCall();
+        } else {
+          return parseIdentifier();
+        }
+      default:
+        return nullptr;
     }
   } else
     return nullptr;
@@ -56,9 +65,12 @@ std::unique_ptr<Statement> Parser::parseStatement() {
       if (peek(1).has_value() &&
           peek(1).value().type == TokenType::OPEN_PAREN) {
         consume();
-        return parseFunctionCall();
-      } else {
-        return nullptr;
+        auto fn_call = parseFunctionCall();
+        consume();
+        return fn_call;
+      } else {  // TODO:
+        consume();
+        return parseAssignment();
       }
     case TokenType::ASSIGNMENT:
       return parseAssignment();
@@ -67,6 +79,12 @@ std::unique_ptr<Statement> Parser::parseStatement() {
     default:
       return nullptr;
   }
+}
+
+std::unique_ptr<Identifier> Parser::parseIdentifier() {
+  auto identifier = std::make_unique<Identifier>(peek().value().value.value());
+
+  return identifier;
 }
 
 std::unique_ptr<VariableDeclaration> Parser::parseVariableDeclaration() {
@@ -88,7 +106,6 @@ std::unique_ptr<VariableDeclaration> Parser::parseVariableDeclaration() {
     }
     auto var_decl = std::make_unique<VariableDeclaration>(std::move(identifier),
                                                           std::move(expr));
-    // consume();
     return var_decl;
   } else {
     return nullptr;
@@ -98,17 +115,14 @@ std::unique_ptr<VariableDeclaration> Parser::parseVariableDeclaration() {
 std::unique_ptr<Assignment> Parser::parseAssignment() {
   auto assign = std::make_unique<Assignment>();
 
-  // TODO:
+  // TODO: peek(-1) is dangerous
   assign->setVarname(peek(-1).value().value.value());
   consume();
 
-  // TODO: remove hardcode
-  // auto a = consume().value.value().c_str();
-  int val = atoi(consume().value.value().c_str());
-  auto expr = std::make_unique<Integer>(val);
+  auto expr = parseExpression();
   assign->setExpression(std::move(expr));
 
-  // consume();
+  consume();
 
   return assign;
 }
@@ -167,7 +181,7 @@ std::unique_ptr<FunctionCall> Parser::parseFunctionCall() {
 
   // TODO: prase arguments
   consume();
-  consume();
+  // consume();
 
   return fn_call;
 }

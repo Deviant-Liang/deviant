@@ -2,8 +2,12 @@ fn get42() -> int {
   ret 42;
 }
 
+// this is main function,
+// the entry point
 fn main() -> int {
-  var x = 20;
-  get42();
-  ret 0;
+  var x = 1;
+  var y = 32;
+  // y = x
+  y = x;
+  ret y;
 }

@@ -98,7 +98,6 @@ class Identifier : public Expression {
 
  private:
   std::string name_;
-  std::unique_ptr<Expression> expr_;
 };
 
 class VariableDeclaration : public Statement {
