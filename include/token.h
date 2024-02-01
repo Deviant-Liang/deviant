@@ -20,6 +20,13 @@ enum class TokenType {
   MINUS,
   STAR,
   FSLASH,
+  LT,
+  LE,
+  GT,
+  GE,
+  EQ,
+  NEQ,
+  EXCLAMATION,
   OPEN_CURLY,
   CLOSE_CURLY
 };

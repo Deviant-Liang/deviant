@@ -57,8 +57,15 @@ class Lexer {
         consume();
         tokens_.push_back({.type = TokenType::SEMICOLON});
       } else if (peek().value() == '=') {
-        consume();
-        tokens_.push_back({.type = TokenType::ASSIGNMENT});
+        if (peek(1).has_value() &&
+            peek(1).value() == '=') {  // deal with comment
+          consume();
+          consume();
+          tokens_.push_back({.type = TokenType::EQ});
+        } else {
+          consume();
+          tokens_.push_back({.type = TokenType::ASSIGNMENT});
+        }
       } else if (peek().value() == '+') {
         consume();
         tokens_.push_back({.type = TokenType::PLUS});
@@ -83,6 +90,36 @@ class Lexer {
         } else {
           consume();
           tokens_.push_back({.type = TokenType::FSLASH});
+        }
+      } else if (peek().value() == '<') {
+        if (peek(1).has_value() &&
+            peek(1).value() == '=') {  // deal with comment
+          consume();
+          consume();
+          tokens_.push_back({.type = TokenType::LE});
+        } else {
+          consume();
+          tokens_.push_back({.type = TokenType::LT});
+        }
+      } else if (peek().value() == '>') {
+        if (peek(1).has_value() &&
+            peek(1).value() == '=') {  // deal with comment
+          consume();
+          consume();
+          tokens_.push_back({.type = TokenType::GE});
+        } else {
+          consume();
+          tokens_.push_back({.type = TokenType::GT});
+        }
+      } else if (peek().value() == '!') {
+        if (peek(1).has_value() &&
+            peek(1).value() == '=') {  // deal with comment
+          consume();
+          consume();
+          tokens_.push_back({.type = TokenType::NEQ});
+        } else {
+          consume();
+          tokens_.push_back({.type = TokenType::EXCLAMATION});
         }
       } else if (peek().value() == '{') {
         consume();

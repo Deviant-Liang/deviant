@@ -15,9 +15,6 @@
 #pragma warning(pop)
 #endif
 
-#define STR_EXPRESSTION "Expression"
-#define STR_STATEMENT "Statement"
-
 namespace deviant {
 
 class DeviantLLVM;
@@ -48,7 +45,7 @@ class Expression : public AstNode {
   ~Expression() override = default;
   llvm::Value* generateCode(DeviantLLVM& context) override = 0;
   Type type() override { return Type::EXPRESSTION; }
-  std::string toString() override { return STR_EXPRESSTION; }
+  std::string toString() override { return "Expression"; }
 };
 
 class Statement : public Expression {
@@ -56,7 +53,7 @@ class Statement : public Expression {
   ~Statement() override = default;
   llvm::Value* generateCode(DeviantLLVM& context) override = 0;
   Type type() override { return Type::EXPRESSTION; }
-  std::string toString() override { return STR_STATEMENT; }
+  std::string toString() override { return "Statement"; }
 };
 
 class Program : public AstNode {
@@ -190,6 +187,37 @@ class FunctionCall : public Statement {
 
  private:
   std::string fn_name_;
+};
+
+class ComparationOp : public Expression {
+ public:
+  enum CompOp {
+    LT,
+    LE,
+    LT,
+    LE,
+    EQ,
+    NEQ
+  }
+
+  explicit ComparationOp(std::unique_ptr<Expression>&& lhs,
+                         CompareOp op,
+                         std::unique_ptr<Expression>&& rhs) : op_(op),
+      lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
+
+  ~ComparationOp() override = default;
+
+  llvm::Value* generateCode(DeviantLLVM& context) override;
+  std::string toString() override { return ""; }
+
+  CompOp getOperator() const { return op_; }
+  Expression* getLHS() { return lhs_.get(); }
+  Expression* getRHS() { return rhs_.get(); }
+
+ private:
+  CompOp op_;
+  std::unique_ptr<Expression> lhs_;
+  std::unique_ptr<Expression> rhs_;
 };
 
 }  // namespace deviant

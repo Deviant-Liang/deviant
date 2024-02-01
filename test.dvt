@@ -5,9 +5,12 @@ fn get42() -> int {
 // this is main function,
 // the entry point
 fn main() -> int {
+  !=; ==; <=; >=; <; >;
   var x = 1;
   var y = 32;
-  // y = x
+  x = get42();
+  // this is a comment
+  // this is another comment
   y = x;
   ret y;
 }
