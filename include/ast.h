@@ -194,14 +194,14 @@ class ComparationOp : public Expression {
   enum CompOp {
     LT,
     LE,
-    LT,
-    LE,
+    GT,
+    GE,
     EQ,
     NEQ
-  }
+  };
 
   explicit ComparationOp(std::unique_ptr<Expression>&& lhs,
-                         CompareOp op,
+                         CompOp op,
                          std::unique_ptr<Expression>&& rhs) : op_(op),
       lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
 
