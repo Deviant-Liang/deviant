@@ -99,6 +99,11 @@ llvm::Value* ReturnStatement::generateCode(DeviantLLVM& context) {
   }
 }
 
+llvm::Value* IfStatement::generateCode(DeviantLLVM& context) {
+  // TODO:
+  return nullptr;
+}
+
 llvm::Value* FunctionStatement::generateCode(DeviantLLVM& context) {
   auto fn = context.getModule()->getFunction(fn_name_);
 
@@ -131,6 +136,19 @@ llvm::Value* FunctionStatement::generateCode(DeviantLLVM& context) {
 llvm::Value* FunctionCall::generateCode(DeviantLLVM& context) {
   // args
   std::vector<llvm::Value*> args;
+  args.reserve(args_.size());
+  for (size_t i = 0; i < args_.size(); ++i) {
+    args.push_back(args_[i]->generateCode(context));
+  }
+
+  // printf
+  if (fn_name_ == "print") {
+    args.push_back(args[0]);
+    llvm::Value* str = context.getBuilder()->CreateGlobalStringPtr("%d");
+    args[0] = str;
+    return context.getBuilder()->CreateCall(
+        context.getModule()->getFunction("printf"), args, "printfCall");
+  }
 
   return context.getBuilder()->CreateCall(
       context.getModule()->getFunction(fn_name_), args);

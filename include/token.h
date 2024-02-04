@@ -14,6 +14,7 @@ enum class TokenType {
   IDENTIFIER,
   OPEN_PAREN,
   CLOSE_PAREN,
+  COMMA,
   SEMICOLON,
   ASSIGNMENT,
   PLUS,
@@ -25,7 +26,7 @@ enum class TokenType {
   GT,
   GE,
   EQ,
-  NEQ,
+  NE,
   EXCLAMATION,
   OPEN_CURLY,
   CLOSE_CURLY

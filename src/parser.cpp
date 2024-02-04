@@ -150,6 +150,16 @@ std::unique_ptr<ReturnStatement> Parser::parseReturnStatement() {
   return ret_stmt;
 }
 
+std::unique_ptr<ComparationOp> Parser::praseInfixStatement() {
+  return nullptr;  // std::unique_ptr<ComparationOp>();
+}
+
+std::unique_ptr<IfStatement> Parser::praseIfStatement() {
+  std::unique_ptr<Expression> expression = std::move(parseExpression());
+
+  return std::make_unique<IfStatement>(std::move(expression));
+}
+
 std::unique_ptr<FunctionStatement> Parser::parseFunctionStatement() {
   consume();
   if (peek().value().value.has_value()) {
@@ -179,9 +189,17 @@ std::unique_ptr<FunctionStatement> Parser::parseFunctionStatement() {
 std::unique_ptr<FunctionCall> Parser::parseFunctionCall() {
   auto fn_call = std::make_unique<FunctionCall>(peek(-1).value().value.value());
 
-  // TODO: prase arguments
   consume();
-  // consume();
+  // prase arguments
+  while (peek().has_value() && peek().value().type != TokenType::CLOSE_PAREN) {
+    fn_call->addArgument(parseExpression());
+    consume();
+    if (peek().has_value() && peek().value().type == TokenType::COMMA) {
+      consume();  // TODO: ,) should be forbidden
+    }
+  }
+  // consume(); // skip close paren
+  // consume(); // skip semicolon
 
   return fn_call;
 }

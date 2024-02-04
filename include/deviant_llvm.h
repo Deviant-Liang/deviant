@@ -158,9 +158,10 @@ class DeviantLLVM {
 
     // int print(const char* format, ...)
     module_->getOrInsertFunction(
-        "print",
-        llvm::FunctionType::get(/*return type*/ builder_->getInt32Ty(),
-                                /*format arg*/ byte_ptr_Ty, /*vararg*/ true));
+        "printf", llvm::FunctionType::get(
+                      llvm::IntegerType::getInt32Ty(*context_),
+                      llvm::PointerType::get(llvm::Type::getInt8Ty(*context_), 0),
+                      true /* this is var arg func type*/));
   }
 
   llvm::Function* createFunction(const std::string& fn_name,

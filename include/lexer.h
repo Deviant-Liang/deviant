@@ -53,6 +53,9 @@ class Lexer {
       } else if (peek().value() == ')') {
         consume();
         tokens_.push_back({.type = TokenType::CLOSE_PAREN});
+      } else if (peek().value() == ',') {
+        consume();
+        tokens_.push_back({.type = TokenType::COMMA});
       } else if (peek().value() == ';') {
         consume();
         tokens_.push_back({.type = TokenType::SEMICOLON});
@@ -116,7 +119,7 @@ class Lexer {
             peek(1).value() == '=') {  // deal with comment
           consume();
           consume();
-          tokens_.push_back({.type = TokenType::NEQ});
+          tokens_.push_back({.type = TokenType::NE});
         } else {
           consume();
           tokens_.push_back({.type = TokenType::EXCLAMATION});

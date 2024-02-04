@@ -185,25 +185,23 @@ class FunctionCall : public Statement {
   llvm::Value* generateCode(DeviantLLVM& context) override;
   std::string toString() override { return "fn call"; }
 
+  void addArgument(std::unique_ptr<Expression>&& arg) {
+    args_.emplace_back(std::move(arg));
+  }
+
  private:
   std::string fn_name_;
+  std::vector<std::unique_ptr<Expression>> args_;
 };
 
 class ComparationOp : public Expression {
  public:
-  enum CompOp {
-    LT,
-    LE,
-    GT,
-    GE,
-    EQ,
-    NEQ
-  };
+  enum CompOp { LT, LE, GT, GE, EQ, NE };
 
   explicit ComparationOp(std::unique_ptr<Expression>&& lhs,
                          CompOp op,
-                         std::unique_ptr<Expression>&& rhs) : op_(op),
-      lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
+                         std::unique_ptr<Expression>&& rhs)
+      : op_(op), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
 
   ~ComparationOp() override = default;
 
@@ -218,6 +216,20 @@ class ComparationOp : public Expression {
   CompOp op_;
   std::unique_ptr<Expression> lhs_;
   std::unique_ptr<Expression> rhs_;
+};
+
+class IfStatement : public Statement {
+ public:
+  explicit IfStatement(std::unique_ptr<Expression>&& condition)
+      : condition_(std::move(condition)) {}
+
+  ~IfStatement() override = default;
+
+  llvm::Value* generateCode(DeviantLLVM& context) override;
+  std::string toString() override { return ""; }
+
+ private:
+  std::unique_ptr<Expression> condition_;
 };
 
 }  // namespace deviant
