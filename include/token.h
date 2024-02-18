@@ -11,6 +11,7 @@ enum class TokenType {
   FN_TYPE,
   VAR,
   IF,
+  ELSE,
   IDENTIFIER,
   OPEN_PAREN,
   CLOSE_PAREN,

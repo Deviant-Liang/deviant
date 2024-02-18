@@ -83,6 +83,9 @@ class DeviantLLVM {
     delete top;
   }
 
+  // set the LLVM block where to put the next instructions
+  void setInsertPoint(llvm::BasicBlock* bblock) { setCurrentBlock(bblock); }
+
   llvm::AllocaInst* findVariable(const std::string& var_name) {
     // Only look in current scope, since outer scope isn't valid while in
     // function declaration.
@@ -116,6 +119,10 @@ class DeviantLLVM {
   }
 
  private:
+  void setCurrentBlock(llvm::BasicBlock* block) {
+    code_blocks_.front()->setCodeBlock(block);
+  }
+
   void initModule();
 
   void saveModuleToFile(const std::string& filename);
@@ -158,10 +165,11 @@ class DeviantLLVM {
 
     // int print(const char* format, ...)
     module_->getOrInsertFunction(
-        "printf", llvm::FunctionType::get(
-                      llvm::IntegerType::getInt32Ty(*context_),
-                      llvm::PointerType::get(llvm::Type::getInt8Ty(*context_), 0),
-                      true /* this is var arg func type*/));
+        "printf",
+        llvm::FunctionType::get(
+            llvm::IntegerType::getInt32Ty(*context_),
+            llvm::PointerType::get(llvm::Type::getInt8Ty(*context_), 0),
+            true /* this is var arg func type*/));
   }
 
   llvm::Function* createFunction(const std::string& fn_name,

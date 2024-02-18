@@ -28,8 +28,8 @@ class Parser {
   std::unique_ptr<FunctionStatement> parseFunctionStatement();
   std::unique_ptr<FunctionCall> parseFunctionCall();
   std::unique_ptr<ReturnStatement> parseReturnStatement();
-  std::unique_ptr<ComparationOp> praseInfixStatement();
-  std::unique_ptr<IfStatement> praseIfStatement();
+  std::unique_ptr<ComparationOp> parseInfixStatement();
+  std::unique_ptr<IfStatement> parseIfStatement();
   std::unique_ptr<Block> parseBlock();
 
   [[nodicard]] std::optional<Token> peek(int offset = 0) const;

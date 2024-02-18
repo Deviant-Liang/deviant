@@ -74,6 +74,8 @@ std::unique_ptr<Statement> Parser::parseStatement() {
       }
     case TokenType::ASSIGNMENT:
       return parseAssignment();
+    case TokenType::IF:
+      return parseIfStatement();
     case TokenType::RETURN:
       return parseReturnStatement();
     default:
@@ -150,14 +152,35 @@ std::unique_ptr<ReturnStatement> Parser::parseReturnStatement() {
   return ret_stmt;
 }
 
-std::unique_ptr<ComparationOp> Parser::praseInfixStatement() {
-  return nullptr;  // std::unique_ptr<ComparationOp>();
+std::unique_ptr<ComparationOp> Parser::parseInfixStatement() {
+  return nullptr;
+  // return std::unique_ptr<ComparationOp>();
 }
 
-std::unique_ptr<IfStatement> Parser::praseIfStatement() {
-  std::unique_ptr<Expression> expression = std::move(parseExpression());
+std::unique_ptr<IfStatement> Parser::parseIfStatement() {
+  std::unique_ptr<IfStatement> if_stmt = std::make_unique<IfStatement>();
 
-  return std::make_unique<IfStatement>(std::move(expression));
+  // condition
+  consume();  // TokenType::IF
+  consume();  // TokenType::OPEN_PAREN
+  if_stmt->setCondition(parseExpression());
+  consume();  // condition
+  consume();  // TokenType::CLOSE_PAREN
+
+  // then
+  consume();  // TokenType::OPEN_CURLY
+  if_stmt->setThenBlock(parseBlock());
+  consume();  // TokenType::CLOSE_CURLY
+
+  // else
+  if (peek().has_value() && peek().value().type == TokenType::ELSE) {
+    consume();  // TokenType::ELSE
+    consume();  // TokenType::OPEN_CURLY
+    if_stmt->setElseBlock(parseBlock());
+    // consume();  // TokenType::CLOSE_CURLY
+  }
+
+  return if_stmt;
 }
 
 std::unique_ptr<FunctionStatement> Parser::parseFunctionStatement() {

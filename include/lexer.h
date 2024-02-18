@@ -30,6 +30,9 @@ class Lexer {
         } else if (buf == "if") {
           tokens_.push_back({.type = TokenType::IF});
           buf.clear();
+        } else if (buf == "else") {
+          tokens_.push_back({.type = TokenType::ELSE});
+          buf.clear();
         } else if (buf == "fn") {
           tokens_.push_back({.type = TokenType::FN});
           buf.clear();

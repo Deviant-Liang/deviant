@@ -220,16 +220,25 @@ class ComparationOp : public Expression {
 
 class IfStatement : public Statement {
  public:
-  explicit IfStatement(std::unique_ptr<Expression>&& condition)
-      : condition_(std::move(condition)) {}
-
+  explicit IfStatement() {}
   ~IfStatement() override = default;
+  void setCondition(std::unique_ptr<Expression>&& condition) {
+    condition_ = std::move(condition);
+  }
+  void setThenBlock(std::unique_ptr<Block>&& then_block) {
+    then_ = std::move(then_block);
+  }
+  void setElseBlock(std::unique_ptr<Block>&& else_block) {
+    else_ = std::move(else_block);
+  }
 
   llvm::Value* generateCode(DeviantLLVM& context) override;
   std::string toString() override { return ""; }
 
  private:
   std::unique_ptr<Expression> condition_;
+  std::unique_ptr<Block> then_;
+  std::unique_ptr<Block> else_;
 };
 
 }  // namespace deviant

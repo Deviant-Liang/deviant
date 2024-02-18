@@ -1,17 +1,19 @@
-fn get42() -> int {
-  print(42);
-  ret 42;
+fn monkey() -> int {
+  var x = 12345;
+  ret x;
 }
 
 // this is main function
 // the entry point
 fn main() -> int {
-  var x = 1;
-  var y = 32;
-  x = get42();
-  // this is a comment
-  // this is another comment
-  y = x;
-  print(x);
-  ret y;
+  var b = 1;
+  if (b) {
+    b = 2;
+  } else {
+    b = 3;
+  }
+
+  print(b);
+
+  ret 0;
 }

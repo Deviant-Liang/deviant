@@ -99,11 +99,6 @@ llvm::Value* ReturnStatement::generateCode(DeviantLLVM& context) {
   }
 }
 
-llvm::Value* IfStatement::generateCode(DeviantLLVM& context) {
-  // TODO:
-  return nullptr;
-}
-
 llvm::Value* FunctionStatement::generateCode(DeviantLLVM& context) {
   auto fn = context.getModule()->getFunction(fn_name_);
 
@@ -153,4 +148,60 @@ llvm::Value* FunctionCall::generateCode(DeviantLLVM& context) {
   return context.getBuilder()->CreateCall(
       context.getModule()->getFunction(fn_name_), args);
 }
+
+llvm::Value* IfStatement::generateCode(DeviantLLVM& context) {
+#if 0
+  llvm::Value* cmp_result = condition_->generateCode(context);
+#endif
+  // hardcode
+  llvm::Value* cmp_result = llvm::ConstantInt::get(
+      llvm::Type::getInt1Ty(context.getGlobalContext()), true);
+
+  if (!cmp_result)
+    return nullptr;
+
+  llvm::Function* fn = context.currentBlock()->getParent();
+  llvm::BasicBlock* then_block =
+      llvm::BasicBlock::Create(context.getGlobalContext(), "then", fn);
+  llvm::BasicBlock* else_block =
+      llvm::BasicBlock::Create(context.getGlobalContext(), "else");
+  llvm::BasicBlock* merge_block =
+  llvm::BasicBlock::Create(context.getGlobalContext(), "merge");
+  llvm::BranchInst::Create(then_block, else_block, cmp_result,
+                           context.currentBlock());
+
+  bool need_merge_block = false;
+
+  context.newScope(then_block);
+  llvm::Value* then_val = then_->generateCode(context);
+  if (then_val == nullptr)
+    return nullptr;
+
+  if (!context.currentBlock()->getTerminator()) {
+    llvm::BranchInst::Create(merge_block, context.currentBlock());
+    need_merge_block = true;
+  }
+
+  fn->insert(fn->end(), else_block);
+  context.endScope();
+
+  context.newScope(else_block);
+  llvm::Value* else_val = nullptr;
+  if (else_) {
+    else_val = else_->generateCode(context);
+  }
+
+  if (context.currentBlock()->getTerminator() == nullptr) {
+    llvm::BranchInst::Create(merge_block, context.currentBlock());
+    need_merge_block = true;
+  }
+  context.endScope();
+  if (need_merge_block) {
+    fn->insert(fn->end(), merge_block);
+    context.setInsertPoint(merge_block);
+  }
+
+  return merge_block;
+}
+
 }  // namespace deviant
