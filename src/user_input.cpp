@@ -12,7 +12,7 @@ void printMessage(Option option) {
   switch (option) {
     case Option::HELP:
       printf("Usage:\n");
-      printf("deviant filename -h -v -q path1;path2\n");
+      printf("deviant filename -h -v -q path\n");
       printf("\t-h this help text.\n");
       printf("\t-v be more verbose.\n");
       printf("\t-q be quiet.\n");
@@ -31,17 +31,17 @@ void printMessage(Option option) {
 
 bool isValidDvtFile(const std::string& filename) {
   size_t location = filename.find_first_of('.');
-  return (filename.substr(location + 1, filename.size()) == "dvt") ? true
-                                                                   : false;
+  std::string extension = filename.substr(location + 1, filename.size());
+  return (extension == "dvt" || extension == "dv") ? true : false;
 }
 
 }  // namespace
 
 bool UserInput::handleUserInput(int argc, char* argv[]) {
-  // debug test
-  filename_ = "C://Users//billb//code//Github//deviant//test.dvt";
+#ifdef _DEBUG  // debug test
+  filename_ = "../../test.dv";
   return true;
-  // ----------
+#endif
 
   if (argc <= 1) {
     printMessage(Option::HELP);

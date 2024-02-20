@@ -166,7 +166,7 @@ llvm::Value* IfStatement::generateCode(DeviantLLVM& context) {
   llvm::BasicBlock* else_block =
       llvm::BasicBlock::Create(context.getGlobalContext(), "else");
   llvm::BasicBlock* merge_block =
-  llvm::BasicBlock::Create(context.getGlobalContext(), "merge");
+      llvm::BasicBlock::Create(context.getGlobalContext(), "merge");
   llvm::BranchInst::Create(then_block, else_block, cmp_result,
                            context.currentBlock());
 

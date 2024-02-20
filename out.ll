@@ -15,7 +15,20 @@ entry:
 
 define i32 @main() {
 entry:
-  %0 = call i32 @monkey()
-  %printfCall = call i32 (ptr, ...) @printf(ptr @0, i32 %0)
+  %b = alloca i32, align 4
+  store i32 1, ptr %b, align 4
+  br i1 true, label %then, label %else
+  %printfCall = call i32 (ptr, ...) @printf(ptr @0, i32 %b1)
   ret i32 0
+
+then:                                             ; preds = %entry
+  store i32 2, ptr %b, align 4
+  br label %merge
+
+else:                                             ; preds = %entry
+  store i32 3, ptr %b, align 4
+  br label %merge
+
+merge:                                            ; preds = %else, %then
+  %b1 = load i32, ptr %b, align 4
 }
