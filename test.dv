@@ -8,14 +8,16 @@ fn monkey() -> int {
 fn main() -> int {
   var b = 1;
 
-  // still has problem in if-else
+  var a = 2;
   if (b) {
     b = 2;
-  } else {
-    b = 3;
+    a = 0;
+    if (a) {
+      a = 1;
+      b = 1;
+    }
   }
-
+  print(a);
   print(b);
-
   ret 0;
 }

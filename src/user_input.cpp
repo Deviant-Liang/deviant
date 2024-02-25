@@ -38,7 +38,7 @@ bool isValidDvtFile(const std::string& filename) {
 }  // namespace
 
 bool UserInput::handleUserInput(int argc, char* argv[]) {
-#ifdef _DEBUG  // debug test
+#ifdef __DEBUG  // debug test
   filename_ = "../../test.dv";
   return true;
 #endif

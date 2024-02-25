@@ -170,10 +170,10 @@ std::unique_ptr<IfStatement> Parser::parseIfStatement() {
   // then
   consume();  // TokenType::OPEN_CURLY
   if_stmt->setThenBlock(parseBlock());
-  consume();  // TokenType::CLOSE_CURLY
 
   // else
   if (peek().has_value() && peek().value().type == TokenType::ELSE) {
+    consume();  // TokenType::CLOSE_CURLY
     consume();  // TokenType::ELSE
     consume();  // TokenType::OPEN_CURLY
     if_stmt->setElseBlock(parseBlock());

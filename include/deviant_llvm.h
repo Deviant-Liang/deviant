@@ -50,11 +50,10 @@ class DeviantLLVM {
     // compile to LLVM IR
     compile(*ast);
 
-    // print generated code
+#ifdef _DEBUG
+// print generated codex
     module_->print(llvm::outs(), nullptr);
-    // #if !defined(LLVM_NO_DUMP)
-    //     // module_->dump();
-    // #endif
+#endif
 
     // save module IR to file
     saveModuleToFile("./out.ll");
@@ -71,7 +70,7 @@ class DeviantLLVM {
   llvm::IRBuilder<>* getBuilder() { return builder_.get(); }
 
   void newScope(llvm::BasicBlock* bb) {
-    if (bb == nullptr) {
+    if (!bb) {
       bb = llvm::BasicBlock::Create(getGlobalContext(), "scope");
     }
     code_blocks_.push_front(new CodeGenBlock(bb));
@@ -128,35 +127,8 @@ class DeviantLLVM {
   void saveModuleToFile(const std::string& filename);
 
   void compile(Program& ast) {
-    // create main function
-    // fn_ = createFunction(
-    //     "main", llvm::FunctionType::get(/*return type*/
-    //     builder_->getInt32Ty(),
-    //                                     /*vararg*/ false), gen(ast));
-
     // compile main body
-    gen(ast);
-
-    // cast to i32 to return from main
-    // builder_->CreateRet(builder_->getInt32(0));
-  }
-
-  // main compiler loop
-  llvm::Value* gen(Program& ast) {
-    // return builder_->getInt32(42);
-    return ast.generateCode(*this);
-
-    // ------------------------------------------------------------
-    // strings
-    auto str = builder_->CreateGlobalStringPtr("Hello, world!\n");
-
-    // call to printf
-    auto print_fn = module_->getFunction("print");
-
-    // args
-    std::vector<llvm::Value*> args{str};
-
-    return builder_->CreateCall(print_fn, args);
+    ast.generateCode(*this);
   }
 
   void setupExternFunctions() {
@@ -210,13 +182,9 @@ class DeviantLLVM {
 
   // currently complier function
   llvm::Function* fn_;
-
   std::unique_ptr<llvm::LLVMContext> context_;
-
   std::unique_ptr<llvm::Module> module_;
-
   std::unique_ptr<llvm::IRBuilder<>> builder_;
-
   std::list<CodeGenBlock*> code_blocks_;
 };
 

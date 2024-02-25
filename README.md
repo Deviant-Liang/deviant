@@ -48,7 +48,7 @@ Deviant follows a simple and intuitive syntax. Below are some key language const
     ```
 
 ## Examples
-Here are some examples demonstrating the usage of Your Programming Language Name:
+Here are some examples demonstrating the usage of Deviant:
 
 - Example 1: Function Definition
     ```deviant

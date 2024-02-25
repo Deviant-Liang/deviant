@@ -16,7 +16,6 @@
 #include "deviant_llvm.h"
 
 namespace deviant {
-// TODO: equal to block?
 llvm::Value* Program::generateCode(DeviantLLVM& context) {
   llvm::Value* last = nullptr;
   for (size_t i = 0; i < statements_.size(); ++i) {
@@ -25,7 +24,7 @@ llvm::Value* Program::generateCode(DeviantLLVM& context) {
   }
   return last;
 }
-// TODO: remove
+
 llvm::Value* AstNode::generateCode(DeviantLLVM& context) {
   return llvm::ConstantInt::get(context.getGenericIntegerType(), 0, true);
 }
@@ -49,9 +48,7 @@ llvm::Value* VariableDeclaration::generateCode(DeviantLLVM& context) {
 
   const std::string& var_name(identifier_->getName());
 
-  if (context.findVariable(var_name)) {
-    // already declard!
-    // context.addError();
+  if (context.findVariable(var_name)) {  // already declard!
     return nullptr;
   }
 
@@ -188,17 +185,18 @@ llvm::Value* IfStatement::generateCode(DeviantLLVM& context) {
   context.newScope(else_block);
   llvm::Value* else_val = nullptr;
   if (else_) {
-    else_val = else_->generateCode(context);
+    else_->generateCode(context);
   }
 
-  if (context.currentBlock()->getTerminator() == nullptr) {
+  if (!context.currentBlock()->getTerminator()) {
     llvm::BranchInst::Create(merge_block, context.currentBlock());
     need_merge_block = true;
   }
   context.endScope();
   if (need_merge_block) {
+    context.newScope(merge_block);
     fn->insert(fn->end(), merge_block);
-    context.setInsertPoint(merge_block);
+    context.getBuilder()->SetInsertPoint(merge_block);
   }
 
   return merge_block;
